@@ -35,6 +35,11 @@ jobs:
           sed -i '/^org.gradle.jvmargs=/d' gradle.properties
           echo "android.useAndroidX=true" >> gradle.properties
 
+      - name: Fix Java Kotlin Compatibility
+        run: |
+          cd PrimeMotion
+          sed -i 's/VERSION_1_8/VERSION_17/g' app/build.gradle.kts
+
       - name: Build Prime Motion APK
         run: |
           cd PrimeMotion
