@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup JDK 17
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -29,10 +29,10 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Extract Android Project
+      - name: Extract Fixed Project
         run: |
-          unzip -q PrimeMotion_Foundation_0_1.zip -d extracted
-          echo "Project extracted"
+          unzip -q PrimeMotion_Foundation_0_2_Fixed.zip -d extracted
+          echo "Project extracted successfully"
 
       - name: Configure Gradle
         run: |
@@ -41,59 +41,7 @@ jobs:
           echo "android.useAndroidX=true" >> gradle.properties
           echo "org.gradle.parallel=false" >> gradle.properties
           echo "org.gradle.workers.max=1" >> gradle.properties
-
-      - name: Configure Java and Kotlin
-        run: |
-          cd extracted/PrimeMotion
-          cat > app/build.gradle.kts <<'EOF'
-          import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
-          plugins {
-              id("com.android.application")
-              id("org.jetbrains.kotlin.android")
-              id("org.jetbrains.kotlin.plugin.compose")
-          }
-
-          android {
-              namespace = "com.primemotion.editor"
-              compileSdk = 35
-
-              defaultConfig {
-                  applicationId = "com.primemotion.editor"
-                  minSdk = 26
-                  targetSdk = 35
-                  versionCode = 1
-                  versionName = "0.1.0"
-              }
-
-              compileOptions {
-                  sourceCompatibility = JavaVersion.VERSION_17
-                  targetCompatibility = JavaVersion.VERSION_17
-              }
-
-              buildFeatures {
-                  compose = true
-              }
-          }
-
-          kotlin {
-              compilerOptions {
-                  jvmTarget = JvmTarget.JVM_17
-              }
-          }
-
-          dependencies {
-              implementation(platform("androidx.compose:compose-bom:2024.12.01"))
-              implementation("androidx.activity:activity-compose:1.10.0")
-              implementation("androidx.compose.ui:ui")
-              implementation("androidx.compose.ui:ui-tooling-preview")
-              implementation("androidx.compose.material3:material3")
-              implementation("androidx.compose.material:material-icons-extended")
-              implementation("androidx.media3:media3-exoplayer:1.5.1")
-              implementation("androidx.media3:media3-ui:1.5.1")
-              debugImplementation("androidx.compose.ui:ui-tooling")
-          }
-          EOF
+          echo "org.gradle.daemon=false" >> gradle.properties
 
       - name: Build Debug APK
         run: |
@@ -103,7 +51,7 @@ jobs:
             -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=1g -XX:+UseG1GC" \
             :app:assembleDebug --stacktrace
 
-      - name: Upload APK
+      - name: Upload Prime Motion APK
         uses: actions/upload-artifact@v4
         with:
           name: Prime-Motion-APK
