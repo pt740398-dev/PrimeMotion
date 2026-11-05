@@ -3,7 +3,8 @@ name: Build Prime Motion APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -13,25 +14,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: '17'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
-      - name: Extract and Build
+      - name: Extract Project
         run: |
           unzip -q PrimeMotion_Foundation_0_1.zip
           cd PrimeMotion
           sed -i '/^org.gradle.jvmargs=/d' gradle.properties
+          echo "android.useAndroidX=true" >> gradle.properties
+
+      - name: Build Prime Motion APK
+        run: |
+          cd PrimeMotion
           gradle --no-daemon :app:assembleDebug
 
       - name: Upload APK
@@ -39,3 +45,4 @@ jobs:
         with:
           name: Prime-Motion-APK
           path: PrimeMotion/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
