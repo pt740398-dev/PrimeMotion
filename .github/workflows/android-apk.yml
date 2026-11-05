@@ -1,3 +1,4 @@
+
 name: Build Prime Motion APK
 
 on:
@@ -35,10 +36,22 @@ jobs:
           sed -i '/^org.gradle.jvmargs=/d' gradle.properties
           echo "android.useAndroidX=true" >> gradle.properties
 
-      - name: Fix Java Kotlin Compatibility
+      - name: Force Java and Kotlin Target 17
         run: |
           cd PrimeMotion
-          sed -i 's/VERSION_1_8/VERSION_17/g' app/build.gradle.kts
+          cat >> app/build.gradle.kts <<'EOF'
+
+          tasks.withType<org.gradle.api.tasks.compile.JavaCompile>().configureEach {
+              sourceCompatibility = "17"
+              targetCompatibility = "17"
+          }
+
+          tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+          }
+          EOF
 
       - name: Build Prime Motion APK
         run: |
