@@ -35,8 +35,11 @@ jobs:
           cd PrimeMotion
           sed -i '/^org.gradle.jvmargs=/d' gradle.properties
           echo "android.useAndroidX=true" >> gradle.properties
+          echo "org.gradle.parallel=false" >> gradle.properties
+          echo "org.gradle.workers.max=1" >> gradle.properties
+          echo "org.gradle.daemon=false" >> gradle.properties
 
-      - name: Force Java and Kotlin Target 17
+      - name: Configure Java and Kotlin
         run: |
           cd PrimeMotion
           cat >> app/build.gradle.kts <<'EOF'
@@ -56,7 +59,10 @@ jobs:
       - name: Build Prime Motion APK
         run: |
           cd PrimeMotion
-          gradle --no-daemon :app:assembleDebug
+          gradle --no-daemon \
+            --max-workers=1 \
+            -Dorg.gradle.jvmargs="-Xmx1536m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC" \
+            :app:assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
