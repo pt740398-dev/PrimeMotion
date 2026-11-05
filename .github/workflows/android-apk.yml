@@ -1,4 +1,3 @@
-
 name: Prime Motion APK Build
 
 on:
@@ -29,9 +28,9 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Extract Fixed Project
+      - name: Extract Prime Motion 0.3
         run: |
-          unzip -q PrimeMotion_Foundation_0_2_Fixed.zip -d extracted
+          unzip -q PrimeMotion_Editing_Workspace_0_3.zip -d extracted
           echo "Project extracted successfully"
 
       - name: Configure Gradle
@@ -43,7 +42,7 @@ jobs:
           echo "org.gradle.workers.max=1" >> gradle.properties
           echo "org.gradle.daemon=false" >> gradle.properties
 
-      - name: Build Debug APK
+      - name: Build Prime Motion APK
         run: |
           cd extracted/PrimeMotion
           gradle --no-daemon \
@@ -54,6 +53,6 @@ jobs:
       - name: Upload Prime Motion APK
         uses: actions/upload-artifact@v4
         with:
-          name: Prime-Motion-APK
+          name: Prime-Motion-0.3-APK
           path: extracted/PrimeMotion/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
