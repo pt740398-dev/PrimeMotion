@@ -1,5 +1,5 @@
 
-name: Build Prime Motion APK
+name: Prime Motion APK Build
 
 on:
   workflow_dispatch:
@@ -15,32 +15,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Setup Gradle
+      - name: Setup Gradle 8.9
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
 
-      - name: Extract Project
+      - name: Extract Android Project
         run: |
-          unzip -q PrimeMotion_Foundation_0_1.zip
-          cd PrimeMotion
+          unzip -q PrimeMotion_Foundation_0_1.zip -d extracted
+          echo "Project extracted"
+
+      - name: Configure Gradle
+        run: |
+          cd extracted/PrimeMotion
           sed -i '/^org.gradle.jvmargs=/d' gradle.properties
           echo "android.useAndroidX=true" >> gradle.properties
           echo "org.gradle.parallel=false" >> gradle.properties
           echo "org.gradle.workers.max=1" >> gradle.properties
 
-      - name: Fix App Build Configuration
+      - name: Configure Java and Kotlin
         run: |
-          cat > PrimeMotion/app/build.gradle.kts <<'EOF'
+          cd extracted/PrimeMotion
+          cat > app/build.gradle.kts <<'EOF'
           import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
           plugins {
@@ -90,18 +95,17 @@ jobs:
           }
           EOF
 
-      - name: Build Prime Motion APK
+      - name: Build Debug APK
         run: |
-          cd PrimeMotion
+          cd extracted/PrimeMotion
           gradle --no-daemon \
             --max-workers=1 \
             -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=1g -XX:+UseG1GC" \
-            :app:assembleDebug
+            :app:assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Prime-Motion-APK
-          path: PrimeMotion/app/build/outputs/apk/debug/app-debug.apk
+          path: extracted/PrimeMotion/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-          
