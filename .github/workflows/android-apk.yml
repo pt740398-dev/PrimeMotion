@@ -31,7 +31,8 @@ jobs:
         run: |
           unzip -q PrimeMotion_Foundation_0_1.zip
           cd PrimeMotion
-          gradle :app:assembleDebug
+          sed -i '/^org.gradle.jvmargs=/d' gradle.properties
+          gradle --no-daemon :app:assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
